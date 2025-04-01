@@ -19,8 +19,8 @@ tdamp_langevin = 0.01/units.fs
 tdamp_bussi = (1e3)*units.fs
 nsteps = 100000
 ndump = 100
-sys_name = 'WMo'
-box_size = '7'
+sys_name = 'CoFeNi'
+box_size = '3'
 # ----- ---------- ----- #
 
 # ----- IMPORTING A MACE CALCULATOR FROM MP-0 MEDIUM ----- #
@@ -43,6 +43,7 @@ print("### --------------------------------------------------------------- ###")
 print("### Simulating",input_file)
 
 init_conf = read(input_file, '0', format='lammps-data')
+print(init_conf.cell)
 
 # dyn = Langevin(init_conf, dt*units.fs, temperature_K=T0, friction=tdamp_langevin, logfile=logfile)
 # dyn = Bussi(init_conf, dt*units.fs, temperature_K=T0, taut=tdamp_bussi, logfile=logfile)

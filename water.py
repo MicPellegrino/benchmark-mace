@@ -28,6 +28,7 @@ macemp = MACECalculator(model_paths="models-uob/GPU_Models/BCC_Foundation_Model/
 
 atoms = build.molecule('H2O')
 atoms.cell = [5, 5, 5, 90, 90, 90]
+print(atoms.get_positions())
 
 atoms.calc = macemp
 
