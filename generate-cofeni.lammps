@@ -1,0 +1,44 @@
+units metal 
+dimension 3 
+boundary p p p
+atom_style atomic
+atom_modify map array
+
+# Number of box replicates
+variable nr equal 9
+
+# File names
+variable outfolder string "confs"
+variable outdata string "${outfolder}/CoFeNi_${nr}.data"
+
+# Fraction of each atomic component
+variable fCo equal 0.333
+variable fFe equal 0.333
+variable fNi equal 0.334
+
+# 'Reasonable' initial lattice parameter for FCC
+variable fccFeNi equal 3.58
+
+lattice fcc ${fccFeNi}
+region box block 0 1 0 1 0 1 units lattice 
+create_box 3 box 
+create_atoms 1 box 
+replicate ${nr} ${nr} ${nr} 
+
+# labelmap atom 1 Co 2 Fe 3 Ni
+set type 1 type/fraction 2 $(v_fNi+v_fFe) 1234567
+set type 2 type/fraction 3 $((v_fFe)/(v_fNi+v_fFe)) 1234566
+
+pair_style eam/alloy 
+pair_coeff * * eam-potentials/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy Co Fe Ni
+neighbor 2.0 bin
+neigh_modify delay 0 every 1 check yes
+
+# Energy minimization
+fix 1 all box/relax iso 0.0 vmax 0.001  
+thermo 10 
+thermo_style custom step pe lx ly lz press 
+min_style cg 
+minimize 1e-4 1e-5 1000 10000
+
+write_data ${outdata}
