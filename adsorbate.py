@@ -17,14 +17,14 @@ macemp = MACECalculator(model_paths="models-uob/GPU_Models/BCC_Foundation_Model/
 
 # Water molecule on a FCC Al slab
 slab = fcc111('Al', size=(2,2,3))
-add_adsorbate(slab, 'H2O', 1.5, 'ontop')
+add_adsorbate(slab, 'H', 1.5, 'ontop')
 
 slab.calc = macemp
 
 # Set up the Langevin dynamics engine for NVT ensemble.
-dyn = Langevin(slab, 0.5*units.fs, temperature_K=300, friction=0.01/units.fs, logfile='water.log')
+dyn = Langevin(slab, 0.5*units.fs, temperature_K=300, friction=0.01/units.fs, logfile='water-on-al.log')
 
-time, temperature, energies, _, _ = test_md(slab, macemp, dyn, nsteps=200, fname='water.xyz', ndump=10, seed=1234, T=300)
+time, temperature, energies, _, _ = test_md(slab, macemp, dyn, nsteps=200, fname='water-on-al.xyz', ndump=10, seed=1234, T=300)
 
 print("time =",time)
 print("T =",temperature)
