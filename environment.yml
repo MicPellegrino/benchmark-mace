@@ -1,0 +1,29 @@
+name: benchmark-mace
+
+channels:
+
+  - conda-forge
+
+dependencies:
+
+  # MACE and LAMMPS won't work with python<3.10.
+  # - python==3.10
+  - python=3.12
+
+  # Jupyer notebook and typical python tools:
+  # - notebook=6.5.5
+  - notebook>=7.0.0
+  - matplotlib
+  - numpy<2.0.0
+  # - scipy
+  # - mpi4py
+  # - numba
+
+  # Simulators and orchestrator:
+  # - lammps
+  - ase
+  
+  # Visualization and analysis of MD trajectories:
+  - nglview
+  - mdanalysis
+  # - ovito
