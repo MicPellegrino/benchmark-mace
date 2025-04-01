@@ -27,6 +27,7 @@ print("##### Testing",model_name,"#####")
 macemp = MACECalculator(model_paths="models-uob/GPU_Models/BCC_Foundation_Model/"+model_name, device='cuda', enable_cueq=True, default_dtype="float64")
 
 atoms = build.molecule('H2O')
+atoms.cell = [5, 5, 5, 90, 90, 90]
 
 atoms.calc = macemp
 
