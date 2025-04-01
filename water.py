@@ -1,3 +1,5 @@
+import numpy as np
+
 from mace.calculators import mace_mp
 from mace.calculators import MACECalculator
 
@@ -47,8 +49,8 @@ p = np.array(
 c = np.array([[8.490373, 0., 0.],
               [0., 4.901919, 0.],
               [0., 0., 26.93236]])
-W = Atoms('4(OH2)', positions=p, cell=c, pbc=[1, 1, 0])
-W.write('WL.traj')
+atoms = Atoms('4(OH2)', positions=p, cell=c, pbc=[1, 1, 0])
+# atoms.write('WL.traj')
 
 atoms.calc = macemp
 
