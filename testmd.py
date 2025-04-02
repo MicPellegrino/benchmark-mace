@@ -47,7 +47,7 @@ def test_md(init_conf,
         temperature.append(Tlog)
         elog = dyn.atoms.get_potential_energy()/n_atoms
         energies.append(elog)
-        print("MD: t=",tlog,"ps | T=",Tlog,"K | e=",elog"eV")
+        print(f"MD: t={tlog:.2f} ps | T={Tlog:.2f} K | e={elog:.2f} eV")
 
     dyn.attach(write_frame, interval=ndump)
     t0 = time.time()
