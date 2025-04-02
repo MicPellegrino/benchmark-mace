@@ -1,7 +1,7 @@
 import numpy as np
 
-# from mace.calculators import mace_mp
-# from mace.calculators import MACECalculator
+from mace.calculators import mace_mp
+from mace.calculators import MACECalculator
 
 from ase import build
 from ase.md import Langevin
@@ -16,7 +16,7 @@ model_name = "OMAT_medium_foundation.model"
 print("##### Testing",model_name,"#####")
 
 # macemp = mace_mp(model="medium-mpa-0", device='cuda', enable_cueq=True, default_dtype="float64")
-# macemp = MACECalculator(model_paths="models-uob/GPU_Models/BCC_Foundation_Model/"+model_name, device='cuda', enable_cueq=True, default_dtype="float64")
+macemp = MACECalculator(model_paths="models-uob/GPU_Models/BCC_Foundation_Model/"+model_name, device='cuda', enable_cueq=True, default_dtype="float64")
 
 # Building the molecular system
 slab = fcc111('Al', size=[2, 4, 3], a=4.05, orthogonal=True)
@@ -42,16 +42,24 @@ water.rotate(90, 'z', center=(0, 0, 0))
 water.set_cell(slab.cell, scale_atoms=False)
 zmin = water.positions[:, 2].min()
 zmax = slab.positions[:, 2].max()
-water.positions += (0, 0, zmax - zmin + 2.0)
+# print(water.positions)
+water.positions += (3.0, 0, 0)
+water.positions += (0, 1.0, 0)
+water.positions += (0, 0, zmax - zmin + 0.75)
+# print(water.positions)
 interface = slab + water
 interface.center(vacuum=6, axis=2)
-interface.write('test-interface.xyz')
+# interface.write('test-interface.xyz')
+
+interface.calc = macemp
 
 # Set up the Langevin dynamics engine for NVT ensemble.
-dyn = Langevin(slab, 0.5*units.fs, temperature_K=300, friction=0.01/units.fs, logfile='water-on-al.log')
+dyn = Langevin(interface, 0.5*units.fs, temperature_K=300, friction=0.01/units.fs, logfile='water-on-al.log')
 
-# time, temperature, energies, _, _ = test_md(slab, macemp, dyn, nsteps=200, fname='water-on-al.xyz', ndump=10, seed=1234, T=300)
+time, temperature, energies, _, _ = test_md(interface, macemp, dyn, nsteps=100000, fname='water-on-al.xyz', ndump=50, seed=1234, T=300)
 
-# print("time =",time)
-# print("T =",temperature)
-# print("e =", energies)
+print("time =",time)
+print("T =",temperature)
+print("e =", energies)
+
+np.savez('h2o-fcc-al', t=time, T=temperature, Epa=energies)
