@@ -8,6 +8,7 @@ from ase.md import Langevin
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from ase import units
 from ase.build import fcc111, add_adsorbate
+from ase.optimize import BFGS
 from ase import Atoms
 
 from testmd import test_md
@@ -53,7 +54,11 @@ interface.center(vacuum=6, axis=2)
 
 interface.calc = macemp
 
-# Set up the Langevin dynamics engine for NVT ensemble.
+print("Begin minimizing with BFGS...")
+opt = BFGS(interface)
+opt.run(fmax=0.001)
+
+print("Beginning MD simulation with Langevin propagator...")
 dyn = Langevin(interface, 0.5*units.fs, temperature_K=300, friction=0.01/units.fs, logfile='water-on-al.log')
 
 time, temperature, energies, _, _ = test_md(interface, macemp, dyn, nsteps=100000, fname='water-on-al.xyz', ndump=50, seed=1234, T=300)
