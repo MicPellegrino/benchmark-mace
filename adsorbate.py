@@ -56,7 +56,7 @@ interface.calc = macemp
 
 print("Begin minimizing with BFGS...")
 opt = BFGS(interface)
-opt.run(fmax=0.001)
+opt.run(fmax=0.001,steps=1000)
 
 print("Beginning MD simulation with Langevin propagator...")
 dyn = Langevin(interface, 0.5*units.fs, temperature_K=300, friction=0.01/units.fs, logfile='water-on-al.log')

@@ -41,9 +41,13 @@ def test_md(init_conf,
 
     def write_frame():
             dyn.atoms.write(fname, append=True)
-            time_ps.append(FS2PS*dyn.get_time()/units.fs)
-            temperature.append(dyn.atoms.get_temperature())
-            energies.append(dyn.atoms.get_potential_energy()/n_atoms)
+	    tlog = FS2PS*dyn.get_time()/units.fs
+            time_ps.append(tlog)
+	    Tlog = dyn.atoms.get_temperature()
+            temperature.append(Tlog)
+	    elog = dyn.atoms.get_potential_energy()/n_atoms
+            energies.append(elog)
+	    print("MD: t=",tlog,"ps | T=",Tlog,"K | e=",elog"eV")
 
     dyn.attach(write_frame, interval=ndump)
     t0 = time.time()
