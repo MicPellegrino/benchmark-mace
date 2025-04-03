@@ -13,7 +13,7 @@ read_data	Al_wide_box.lmp
 # replicate 	1 1 3
 # ------------- Define interatomic potential ----
 pair_style 	mace no_domain_decomposition
-pair_coeff	* * mace01_run-123_stagetwo.model-lammps.pt Al # W
+pair_coeff	* * ../models-uob/GPU_Models/BCC_Foundation_Model/OMAT_medium_foundation.model-lammps-pthead.pt Al
 # ------------- Define settings -----------------
 
 variable	E equal pe
