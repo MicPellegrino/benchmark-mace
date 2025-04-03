@@ -8,7 +8,7 @@ from ase.md import Langevin
 from ase.md.nose_hoover_chain import NoseHooverChainNVT
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from ase import units
-from ase.build import fcc111, add_adsorbate
+from ase.build import fcc111, bcc100, add_adsorbate
 from ase.optimize import BFGS
 from ase import Atoms
 from ase.io.lammpsdata import write_lammps_data
@@ -22,7 +22,13 @@ print("##### Testing",model_name,"#####")
 macemp = MACECalculator(model_paths="models-uob/GPU_Models/BCC_Foundation_Model/"+model_name, device='cuda', enable_cueq=True, default_dtype="float64")
 
 # Building the molecular system
-slab = fcc111('Al', size=[2, 4, 3], a=4.05, orthogonal=True)
+
+# FCC Al
+# slab = fcc111('Al', size=[2, 4, 3], a=4.05, orthogonal=True)
+
+# BCC Cr
+slab = bcc100('Cr', size=[3, 4, 3], a=2.8849, orthogonal=True)
+
 p = np.array(
     [[0.27802511, -0.07732213, 13.46649107],
      [0.91833251, -1.02565868, 13.41456626],
@@ -44,29 +50,32 @@ water.rotate(90, 'z', center=(0, 0, 0))
 water.set_cell(slab.cell, scale_atoms=False)
 zmin = water.positions[:, 2].min()
 zmax = slab.positions[:, 2].max()
-water.positions += (3.0, 0, 0)
+water.positions += (4.0, 0, 0)
 water.positions += (0, 1.0, 0)
-water.positions += (0, 0, zmax - zmin + 0.75)
+water.positions += (0, 0, zmax - zmin + 1.0)
 interface = slab + water
 interface.center(vacuum=6, axis=2)
 
 interface.calc = macemp
 
-write_lammps_data("h2o-al-ase-premin.data", interface, masses=True)
+# write_lammps_data("h2o-al-ase-premin.data", interface, masses=True)
+write_lammps_data("h2o-cr-ase-premin.data", interface)
 
 print("Begin minimizing with BFGS...")
 opt = BFGS(interface)
 opt.run(fmax=0.0001,steps=1000)
 
-write_lammps_data("h2o-al-ase-postmin.data", interface, masses=True)
+# write_lammps_data("h2o-al-ase-postmin.data", interface, masses=True)
+write_lammps_data("h2o-cr-ase-postmin.data", interface, masses=True)
 
 print("Beginning MD simulation with Langevin propagator...")
 # dyn = Langevin(interface, 0.5*units.fs, temperature_K=300, friction=0.01/units.fs, logfile='water-on-al.log')
-dyn = NoseHooverChainNVT(interface, 0.25*units.fs, temperature_K=300, tdamp=25*units.fs, tchain=1, logfile='water-on-al.log')
+dyn = NoseHooverChainNVT(interface, 0.25*units.fs, temperature_K=300, tdamp=25*units.fs, tchain=1, logfile='water-on-cr.log')
 
-time, temperature, energies, _, _ = test_md(interface, macemp, dyn, nsteps=10000, fname='water-on-al.xyz', ndump=50, seed=1234, T=300)
+time, temperature, energies, _, _ = test_md(interface, macemp, dyn, nsteps=10000, fname='water-on-cr.xyz', ndump=50, seed=1234, T=300)
 
-write_lammps_data("h2o-al-ase-postmd.data", interface, masses=True, velocities=True)
+# write_lammps_data("h2o-al-ase-postmd.data", interface, masses=True, velocities=True)
+write_lammps_data("h2o-cr-ase-postmd.data", interface, masses=True, velocities=True)
 
 print("time =",time)
 print("T =",temperature)
