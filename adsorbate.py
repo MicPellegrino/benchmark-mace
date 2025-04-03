@@ -5,15 +5,17 @@ from mace.calculators import MACECalculator
 
 from ase import build
 from ase.md import Langevin
+from ase.md.nose_hoover_chain import NoseHooverChainNVT
 from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 from ase import units
 from ase.build import fcc111, add_adsorbate
 from ase.optimize import BFGS
 from ase import Atoms
+from ase.io.lammpsdata import write_lammps_data
 
 from testmd import test_md
 
-model_name = "OMAT_medium_foundation.model"
+model_name = "mace01_tinyob3.model"
 print("##### Testing",model_name,"#####")
 
 # macemp = mace_mp(model="medium-mpa-0", device='cuda', enable_cueq=True, default_dtype="float64")
@@ -39,29 +41,32 @@ c = np.array([[8.490373, 0., 0.],
               [0., 0., 26.93236]])
 water = Atoms('4(OH2)', positions=p, cell=c, pbc=[1, 1, 0])
 water.rotate(90, 'z', center=(0, 0, 0))
-# water.wrap()
 water.set_cell(slab.cell, scale_atoms=False)
 zmin = water.positions[:, 2].min()
 zmax = slab.positions[:, 2].max()
-# print(water.positions)
 water.positions += (3.0, 0, 0)
 water.positions += (0, 1.0, 0)
 water.positions += (0, 0, zmax - zmin + 0.75)
-# print(water.positions)
 interface = slab + water
 interface.center(vacuum=6, axis=2)
-# interface.write('test-interface.xyz')
 
 interface.calc = macemp
 
+write_lammps_data("h2o-al-ase-premin.data", interface, masses=True)
+
 print("Begin minimizing with BFGS...")
 opt = BFGS(interface)
-opt.run(fmax=0.001,steps=1000)
+opt.run(fmax=0.0001,steps=1000)
+
+write_lammps_data("h2o-al-ase-postmin.data", interface, masses=True)
 
 print("Beginning MD simulation with Langevin propagator...")
-dyn = Langevin(interface, 0.5*units.fs, temperature_K=300, friction=0.01/units.fs, logfile='water-on-al.log')
+# dyn = Langevin(interface, 0.5*units.fs, temperature_K=300, friction=0.01/units.fs, logfile='water-on-al.log')
+dyn = NoseHooverChainNVT(interface, 0.25*units.fs, temperature_K=300, tdamp=25*units.fs, tchain=1, logfile='water-on-al.log')
 
-time, temperature, energies, _, _ = test_md(interface, macemp, dyn, nsteps=100000, fname='water-on-al.xyz', ndump=50, seed=1234, T=300)
+time, temperature, energies, _, _ = test_md(interface, macemp, dyn, nsteps=10000, fname='water-on-al.xyz', ndump=50, seed=1234, T=300)
+
+write_lammps_data("h2o-al-ase-postmd.data", interface, masses=True, velocities=True)
 
 print("time =",time)
 print("T =",temperature)
