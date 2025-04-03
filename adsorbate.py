@@ -15,11 +15,13 @@ from ase.io.lammpsdata import write_lammps_data
 
 from testmd import test_md
 
-model_name = "mace01_tinyob3.model"
-print("##### Testing",model_name,"#####")
+model_name = "mace01_mp0_fix2.model"
 
-# macemp = mace_mp(model="medium-mpa-0", device='cuda', enable_cueq=True, default_dtype="float64")
-macemp = MACECalculator(model_paths="models-uob/GPU_Models/BCC_Foundation_Model/"+model_name, device='cuda', enable_cueq=True, default_dtype="float64")
+print("##### Testing MACE MP-0 small #####")
+macemp = mace_mp(model="medium-mpa-0", device='cuda', enable_cueq=True, default_dtype="float64")
+
+print("##### Testing",model_name,"#####")
+# macemp = MACECalculator(model_paths="models-uob/GPU_Models/BCC_Foundation_Model/"+model_name, device='cuda', enable_cueq=True, default_dtype="float64")
 
 # Building the molecular system
 
@@ -58,27 +60,24 @@ interface.center(vacuum=6, axis=2)
 
 interface.calc = macemp
 
-# write_lammps_data("h2o-al-ase-premin.data", interface, masses=True)
 write_lammps_data("h2o-cr-ase-premin.data", interface)
 
 print("Begin minimizing with BFGS...")
 opt = BFGS(interface)
-opt.run(fmax=0.0001,steps=1000)
+opt.run(fmax=0.00001,steps=1000)
 
-# write_lammps_data("h2o-al-ase-postmin.data", interface, masses=True)
 write_lammps_data("h2o-cr-ase-postmin.data", interface, masses=True)
 
 print("Beginning MD simulation with Langevin propagator...")
-# dyn = Langevin(interface, 0.5*units.fs, temperature_K=300, friction=0.01/units.fs, logfile='water-on-al.log')
-dyn = NoseHooverChainNVT(interface, 0.25*units.fs, temperature_K=300, tdamp=25*units.fs, tchain=1, logfile='water-on-cr.log')
+dyn = Langevin(interface, 0.25*units.fs, temperature_K=300, friction=0.1/units.fs, logfile='water-on-cr.log')
+# dyn = NoseHooverChainNVT(interface, 0.25*units.fs, temperature_K=300, tdamp=1000*units.fs, tchain=1, logfile='water-on-cr.log')
 
-time, temperature, energies, _, _ = test_md(interface, macemp, dyn, nsteps=10000, fname='water-on-cr.xyz', ndump=50, seed=1234, T=300)
+time, temperature, energies, _, _ = test_md(interface, macemp, dyn, nsteps=20000, fname='water-on-cr.xyz', ndump=50, seed=1234, T=300)
 
-# write_lammps_data("h2o-al-ase-postmd.data", interface, masses=True, velocities=True)
 write_lammps_data("h2o-cr-ase-postmd.data", interface, masses=True, velocities=True)
 
 print("time =",time)
 print("T =",temperature)
 print("e =", energies)
 
-np.savez('h2o-fcc-al', t=time, T=temperature, Epa=energies)
+np.savez('h2o-bcc-cr', t=time, T=temperature, Epa=energies)
