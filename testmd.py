@@ -23,15 +23,16 @@ def test_md(init_conf,
             fname='md_test.xyz',
             ndump=1,
             seed=1234,
-            T=300):
+            T=300,
+            genvel=True):
     
     random.seed(seed)
     init_conf.calc = calc
     
-    # Remove COM and rotational velocity
-    MaxwellBoltzmannDistribution(init_conf, temperature_K=T)
-    Stationary(init_conf)
-    ZeroRotation(init_conf)
+    if genvel :
+        MaxwellBoltzmannDistribution(init_conf, temperature_K=T)
+        Stationary(init_conf)
+        ZeroRotation(init_conf)
 
     time_ps = []
     temperature = []
