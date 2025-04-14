@@ -9,11 +9,11 @@ newton        	on
 
 
 # ------------- Read geometry -------------------
-read_data	Al_wide_box.lmp
-# replicate 	1 1 3
+read_data	minim_input.lmp
+replicate 	1 1 2
 # ------------- Define interatomic potential ----
 pair_style 	mace no_domain_decomposition
-pair_coeff	* * ../models-uob/GPU_Models/BCC_Foundation_Model/OMAT_medium_foundation.model-lammps-pthead.pt Al
+pair_coeff	* * ../models-uob/GPU_Models/BCC_Foundation_Model/mace01_tinyob3.model-lammps.pt Al
 # ------------- Define settings -----------------
 
 variable	E equal pe
