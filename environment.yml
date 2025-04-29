@@ -24,6 +24,6 @@ dependencies:
   - ase
   
   # Visualization and analysis of MD trajectories:
-  - nglview
-  - mdanalysis
+  # - nglview
+  # - mdanalysis
   # - ovito
