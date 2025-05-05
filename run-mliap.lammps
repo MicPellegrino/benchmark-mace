@@ -1,0 +1,46 @@
+# Trying to run LAMMPS EAM benchmark using MACE NNP
+
+# MACE requires 'metal' units and 'atomic' style
+units         metal
+atom_style    atomic
+atom_modify   map yes
+boundary      p p p
+newton        on
+
+# Input and output file
+# variable inputfile string "confs/WMo_9.data"dd
+variable inputfile string "uob/Al_wide_box.lmp"
+variable outputfile1 string "lammps-output/Al_wide_minimize.data"
+variable outputfile2 string "lammps-output/Al_wide_final.data"
+
+variable modelfile string "models/mace01_run-123_stagetwo.model-mliap_lammps.pt"
+
+read_data ${inputfile}
+
+# Importing force field
+# pair_style mace no_domain_decomposition
+pair_style mliap unified ${modelfile} 0
+pair_coeff * * Al
+
+# Energy minimization
+# fix           rel1 all box/relax iso 0.0 vmax 0.001  
+# min_style     cg 
+# minimize      1e-4 1e-5 1000 10000
+# write_data    ${outputfile1}
+
+# Preparation and run
+
+# velocity      all create 300.0 4928459 rot yes dist gaussian
+
+neighbor        1.0 bin
+neigh_modify    every 1 delay 5 check yes
+
+fix		nvt1 all nvt temp 300.0 300.0 1.0
+# fix		nve1 all nve
+
+timestep	0.001
+thermo		1
+
+run		1000
+
+write_data      ${outputfile2}
