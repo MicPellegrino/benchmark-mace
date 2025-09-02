@@ -13,7 +13,7 @@ variable inputfile string "uob/Al_wide_box.lmp"
 variable outputfile1 string "lammps-output/Al_wide_minimize.data"
 variable outputfile2 string "lammps-output/Al_wide_final.data"
 
-variable modelfile string "models/mace01_run-123_stagetwo.model-mliap_lammps.pt"
+variable modelfile string "models-uob/GPU_Models/BCC/mace01_64channel_stagetwo.model-mliap_lammps.pt"
 
 read_data ${inputfile}
 
