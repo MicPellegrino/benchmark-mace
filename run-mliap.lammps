@@ -8,7 +8,6 @@ boundary      p p p
 newton        on
 
 # Input and output file
-# variable inputfile string "confs/WMo_9.data"dd
 variable inputfile string "uob/Al_wide_box.lmp"
 variable outputfile1 string "lammps-output/Al_wide_minimize.data"
 variable outputfile2 string "lammps-output/Al_wide_final.data"

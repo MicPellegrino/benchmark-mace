@@ -5,7 +5,7 @@ atom_style atomic
 atom_modify map array
 
 # Number of box replicates
-variable nr equal 9
+variable nr equal 17
 
 # File names
 variable outfolder string "confs"
