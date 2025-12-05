@@ -1,0 +1,46 @@
+units metal 
+dimension 3 
+boundary p p p
+atom_style atomic
+
+# atom_modify map array
+atom_modify map yes
+newton on
+
+# File names
+variable indata string "../confs/AlTiMo_7.data"
+variable outdata string "AlTiMo_mcmd.data"
+
+variable ffname string "../models-uob/MACE_Models_Mark_IV/finetuned_models/finetuned_omat_small_gpu.model-mliap_lammps.pt"
+
+read_data ${indata}
+
+pair_style mliap unified ${ffname} 0
+pair_coeff * * Al Ti Mo
+
+neighbor 1.0 bin
+neigh_modify every 1 delay 5 check yes
+
+variable pea_avg equal "pe/atoms"
+thermo 10
+thermo_style custom step v_pea_avg pe lx ly lz press 
+
+dump myDump all custom 100 AlMoTi.dump id type x y z xu yu zu vx vy vz
+dump_modify myDump element Al Mo Ti
+
+velocity all create 300.0 4928459 rot yes dist gaussian
+
+# Fix NPT
+timestep 0.001
+fix myMD all npt temp 300.0 300.0 1.0 aniso 0.0 0.0 5.0
+
+# Fix atom swaps
+# (for some reason it is possible to swap only two atom types at the time
+# unless the simulation is performed in the grand-canonical ensemble?)
+fix myMC1 all atom/swap 25 10 1234 300.0 ke no types 1 2
+fix myMC2 all atom/swap 25 10 2345 300.0 ke no types 2 3
+fix myMC3 all atom/swap 25 10 3456 300.0 ke no types 1 3
+
+run 100
+
+write_data ${outdata}
