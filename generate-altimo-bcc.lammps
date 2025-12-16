@@ -1,0 +1,46 @@
+units metal 
+dimension 3 
+boundary p p p
+atom_style atomic
+atom_modify map array
+
+# Number of box replicates
+variable nr equal 15
+
+# File names
+variable outfolder string "confs"
+variable outdata string "${outfolder}/AlTiMo_${nr}_bcc.data"
+
+# Fraction of each atomic component
+variable fAl equal 0.333
+variable fTi equal 0.333
+variable fMo equal 0.334
+
+# 'Reasonable' initial lattice parameter for FCC
+variable bccAlTiMo equal 3.26
+
+lattice bcc ${bccAlTiMo}
+region box block 0 1 0 1 0 1 units lattice 
+create_box 3 box 
+create_atoms 1 box 
+replicate ${nr} ${nr} ${nr} 
+
+# labelmap atom 1 Co 2 Fe 3 Ni
+set type 1 type/fraction 2 $(v_fMo+v_fTi) 1234567
+set type 2 type/fraction 3 $((v_fTi)/(v_fMo+v_fTi)) 1234566
+
+pair_style eam/alloy 
+pair_coeff * * eam-potentials/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy Al Ti Mo
+neighbor 2.0 bin
+neigh_modify delay 0 every 1 check yes
+
+write_data ${outdata}
+
+# Energy minimization
+fix 1 all box/relax iso 0.0 vmax 0.001  
+thermo 10 
+thermo_style custom step pe lx ly lz press 
+min_style cg 
+minimize 1e-4 1e-5 1000 10000
+
+write_data ${outdata}
