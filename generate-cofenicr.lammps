@@ -1,0 +1,52 @@
+units metal 
+dimension 3 
+boundary p p p
+atom_style atomic
+atom_modify map array
+
+variable ff_lib string "meam-potentials/choi/library.meam"
+variable ff_lib_e string "Co Ni Cr Fe Mn"
+variable ff_mod string "meam-potentials/choi/CoNiCrFeMn.meam"
+variable ff_mod_e string "Co Fe Ni Cr"
+variable ff string "${ff_lib} ${ff_lib_e} ${ff_mod} ${ff_mod_e}"
+
+# Number of box replicates
+variable nr equal 19
+
+# File names
+variable outfolder string "confs-cofenicr"
+variable outdata string "${outfolder}/CoFeNiCr_${nr}.data"
+
+# Fraction of each atomic component
+variable fCo equal 0.25
+variable fFe equal 0.25
+variable fNi equal 0.25
+variable fCr equal 0.25
+
+# 'Reasonable' initial lattice parameter for FCC
+variable fccFeNi equal 3.58
+
+lattice fcc ${fccFeNi}
+region box block 0 1 0 1 0 1 units lattice 
+create_box 4 box 
+create_atoms 1 box 
+replicate ${nr} ${nr} ${nr} 
+
+# labelmap atom 1 Co 2 Fe 3 Ni
+set type 1 type/fraction 2 $(v_fNi+v_fFe+v_fCr)                 1234567
+set type 2 type/fraction 3 $((v_fNi+v_fCr)/(v_fNi+v_fFe+v_fCr)) 3725728
+set type 2 type/fraction 3 $((v_fCr)/(v_fNi+v_fFe))             7527185
+
+pair_style meam 
+pair_coeff * * ${ff}
+neighbor 2.0 bin
+neigh_modify delay 0 every 1 check yes
+
+# Energy minimization
+fix 1 all box/relax iso 0.0 vmax 0.001  
+thermo 10 
+thermo_style custom step pe lx ly lz press 
+min_style cg 
+minimize 1e-4 1e-5 1000 10000
+
+write_data ${outdata}
